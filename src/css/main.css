@@ -1,0 +1,67 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+	.secret-word {
+		text-align: center;
+	}
+
+	.secret-letter {
+		background: #666666;
+		color: white;
+		cursor: default;
+		enabled: false;
+	}
+	
+	.guesses{
+		height: 180px;
+		width: 230px;
+		
+	}
+	
+	.guesses .guess-number{
+		font-size: 200px;
+		position: relative;
+		padding-top: 70px;
+		text-align: center;
+	}
+	
+	.guesses-remaining{
+		float: right;
+	}
+	
+	.guesses-remaining .guesses-text{
+		font-weight: bold;
+		font-size: 20px;
+	}
+	
+	.available-letters{
+		width: 100%;
+	}
+
+	.available {
+		text-align: center;
+		width: 50%;
+	}
+
+	.available-letter {
+		background: white;
+		color: #1BE032;
+	}
+
+	.computer-messages{
+		
+		
+	}
+
+
+
+
+
+
+
+
+
+
+
