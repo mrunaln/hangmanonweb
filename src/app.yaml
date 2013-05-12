@@ -20,6 +20,12 @@ handlers:
   
 - url: /home
   script: main.app
+
+- url: /initialize
+  script: main.app
+
+- url: /input
+  script: main.app
   
 - url: /.*
   static_files: templates/404.html

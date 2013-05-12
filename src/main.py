@@ -19,7 +19,7 @@ import jinja2
 import os
 import string
 import random
-
+import json
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
@@ -32,7 +32,7 @@ guesses = 8
 lettersGuessed = ""
 previousValue = ""
 currentValue = ""
-myDict = {}
+responseObject = {}
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -65,11 +65,15 @@ class ProcessInputHandler(Handler):
     def get(self):
         pass
     
-    def post(self, guess):
-        if( mistakesMade < guesses ):
+    def post(self):
+        #guess
+        guess = json.loads(self.request.body)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.write(json.dumps(guess))
+        """if( mistakesMade < guesses ):
             
             print "You have " + str(guesses - mistakesMade) + " guesses left."
-            myDict["guesses"] =  guesses - mistakesMade
+            responseObject["guesses"] =  guesses - mistakesMade
             
             availableLetters = getAvailableLetters(lettersGuessed)
             print "Available Letters: " + availableLetters
@@ -85,12 +89,12 @@ class ProcessInputHandler(Handler):
             #    print "Oops! You've already guessed that letter: " + currentValue
             else:
                 currentValue = getGuessedWord(secretWord, lettersGuessed)
-                #myDict["guessedWord"] = currentValue
+                #responseObject["guessedWord"] = currentValue
                 if currentValue == previousValue:
                     if guessInLowerCase not in lettersGuessed:
                         lettersGuessed += guessInLowerCase
                     print "Oops! That letter is not in my word: " + previousValue
-                    myDict["Message"] = "Oops! That letter is not in my word"
+                    responseObject["Message"] = "Oops! That letter is not in my word"
                     mistakesMade += 1
                 else:
                     previousValue = currentValue
@@ -102,11 +106,11 @@ class ProcessInputHandler(Handler):
                             #if guessInLowerCase not in lettersGuessed:
                             #    lettersGuessed += guessInLowerCase
                             print "Oops! That letter is not in my word: " + currentValue
-                            myDict["Message"] = "Oops! That letter is not in my word"
+                            responseObject["Message"] = "Oops! That letter is not in my word"
                             mistakesMade += 1
                         else:
                             print "Good guess: " + currentValue
-                            myDict["Message"] = "Good guess"
+                            responseObject["Message"] = "Good guess"
                             # add code to make change in lettersGuessed when multiple entries are present
                             
                             count = secretWord.count(guessInLowerCase)
@@ -118,7 +122,7 @@ class ProcessInputHandler(Handler):
                             
                     else:
                         print "Good guess: " + currentValue
-                        myDict["Message"] = "Good guess"
+                        responseObject["Message"] = "Good guess"
                         # add code to make change in lettersGuessed when multiple entries are present
                         
                         count = secretWord.count(guessInLowerCase)
@@ -131,16 +135,17 @@ class ProcessInputHandler(Handler):
             #print "Letters Guessed: " + lettersGuessed
             if isWordGuessed(secretWord, lettersGuessed):
                 print "Congratulations, you won!"
-                myDict["Message"] = "Congratulations, you won!"
+                responseObject["Message"] = "Congratulations, you won!"
                 #break
 
         if mistakesMade == guesses:
             print "Sorry, you ran out of guesses. The word was "  + secretWord + "."
-            myDict["guesses"] = guesses - mistakesMade 
-            myDict["Message"] = "Sorry, you ran out of guesses. The word was"
+            responseObject["guesses"] = guesses - mistakesMade 
+            responseObject["Message"] = "Sorry, you ran out of guesses. The word was"
             
-        return myDict 
-    
+        return responseObject 
+        """
+        
     
 class InitializeGameHandler(Handler):
     def get(self):
@@ -153,10 +158,12 @@ class InitializeGameHandler(Handler):
         """
         global secretWord
         secretWord = random.choice(wordlist)
-        myDict["Message"] = "Nothing"
-        myDict["guesses"] = 0
-        myDict["guessedWord"] = [] 
-        
+        responseObject["msg"] = secretWord 
+        responseObject["guesses"] = 9
+        #responseObject["guessedWord"] = [] 
+        responseObject["secretWordLength"] = len(secretWord)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.write(json.dumps(responseObject))
     
     def post(self):
         pass    
@@ -197,13 +204,13 @@ def getGuessedWord(secretWord, lettersGuessed):
     ans = []
     l = len(secretWord)
     while l > 0:
-     ans.append('_ ')
-     l -= 1 
+        ans.append('_ ')
+        l -= 1 
     idx = -1
     for d in arr:
         if d in lettersGuessed:
             idx = arr.index(d)
-            myDict["guessedWord"].append(idx)
+            responseObject["guessedWord"].append(idx)
             arr[idx] = '-1'
             ans[idx] = d
         
