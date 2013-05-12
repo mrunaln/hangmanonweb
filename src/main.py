@@ -27,6 +27,13 @@ wordlist = ""
 secretWord = ""
 WORDLIST_FILENAME = "words.txt"
 
+mistakesMade = 0
+guesses = 8
+lettersGuessed = ""
+previousValue = ""
+currentValue = ""
+myDict = {}
+
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -58,8 +65,81 @@ class ProcessInputHandler(Handler):
     def get(self):
         pass
     
-    def post(self):
-        pass
+    def post(self, guess):
+        if( mistakesMade < guesses ):
+            
+            print "You have " + str(guesses - mistakesMade) + " guesses left."
+            myDict["guesses"] =  guesses - mistakesMade
+            
+            availableLetters = getAvailableLetters(lettersGuessed)
+            print "Available Letters: " + availableLetters
+            
+            #guess = raw_input("Please guess a letter: ")
+            guessInLowerCase = guess.lower()
+            if guessInLowerCase not in lettersGuessed:
+                lettersGuessed += guessInLowerCase
+                
+                # as we will disable the buttons this will not b a case
+                
+            #if guessInLowerCase not in availableLetters:
+            #    print "Oops! You've already guessed that letter: " + currentValue
+            else:
+                currentValue = getGuessedWord(secretWord, lettersGuessed)
+                #myDict["guessedWord"] = currentValue
+                if currentValue == previousValue:
+                    if guessInLowerCase not in lettersGuessed:
+                        lettersGuessed += guessInLowerCase
+                    print "Oops! That letter is not in my word: " + previousValue
+                    myDict["Message"] = "Oops! That letter is not in my word"
+                    mistakesMade += 1
+                else:
+                    previousValue = currentValue
+                    if mistakesMade == 0:
+                        firstCheck = ""
+                        for i in range(0, len(secretWord)):
+                            firstCheck += "_ "
+                        if currentValue == firstCheck:
+                            #if guessInLowerCase not in lettersGuessed:
+                            #    lettersGuessed += guessInLowerCase
+                            print "Oops! That letter is not in my word: " + currentValue
+                            myDict["Message"] = "Oops! That letter is not in my word"
+                            mistakesMade += 1
+                        else:
+                            print "Good guess: " + currentValue
+                            myDict["Message"] = "Good guess"
+                            # add code to make change in lettersGuessed when multiple entries are present
+                            
+                            count = secretWord.count(guessInLowerCase)
+                            count -= 1 # bcuz once upar ho chuka hai
+                            while count:
+                                lettersGuessed += guessInLowerCase
+                                count -= 1  
+                            #print lettersGuessed
+                            
+                    else:
+                        print "Good guess: " + currentValue
+                        myDict["Message"] = "Good guess"
+                        # add code to make change in lettersGuessed when multiple entries are present
+                        
+                        count = secretWord.count(guessInLowerCase)
+                        count -= 1 # bcuz once upar ho chuka hai
+                        while count:
+                                lettersGuessed += guessInLowerCase
+                                count -= 1
+                        #print lettersGuessed
+                        
+            #print "Letters Guessed: " + lettersGuessed
+            if isWordGuessed(secretWord, lettersGuessed):
+                print "Congratulations, you won!"
+                myDict["Message"] = "Congratulations, you won!"
+                #break
+
+        if mistakesMade == guesses:
+            print "Sorry, you ran out of guesses. The word was "  + secretWord + "."
+            myDict["guesses"] = guesses - mistakesMade 
+            myDict["Message"] = "Sorry, you ran out of guesses. The word was"
+            
+        return myDict 
     
     
 class InitializeGameHandler(Handler):
@@ -73,6 +153,9 @@ class InitializeGameHandler(Handler):
         """
         global secretWord
         secretWord = random.choice(wordlist)
+        myDict["Message"] = "Nothing"
+        myDict["guesses"] = 0
+        myDict["guessedWord"] = [] 
         
     
     def post(self):
@@ -120,9 +203,11 @@ def getGuessedWord(secretWord, lettersGuessed):
     for d in arr:
         if d in lettersGuessed:
             idx = arr.index(d)
+            myDict["guessedWord"].append(idx)
             arr[idx] = '-1'
             ans[idx] = d
-    
+        
+ 
     return ''.join(ans)
 
 
@@ -144,71 +229,3 @@ def getAvailableLetters(lettersGuessed):
 
     
 
-def hangman(secretWord):
-    print "I am thinking of a word that is " + str(len(secretWord)) + " letters long."
-    mistakesMade = 0
-    guesses = 8
-    lettersGuessed = ""
-    returnedValues = []
-
-    previousValue = ""
-    currentValue = ""
-    
-    while( mistakesMade < guesses ):
-        print "-------------"
-        print "You have " + str(guesses - mistakesMade) + " guesses left."
-        availableLetters = getAvailableLetters(lettersGuessed)
-        print "Available Letters: " + availableLetters
-        guess = raw_input("Please guess a letter: ")
-        guessInLowerCase = guess.lower()
-        if guessInLowerCase not in lettersGuessed:
-            lettersGuessed += guessInLowerCase
-        if guessInLowerCase not in availableLetters:
-            print "Oops! You've already guessed that letter: " + currentValue
-        else:
-            currentValue = getGuessedWord(secretWord, lettersGuessed)
-            if currentValue == previousValue:
-                if guessInLowerCase not in lettersGuessed:
-                    lettersGuessed += guessInLowerCase
-                print "Oops! That letter is not in my word: " + previousValue
-                mistakesMade += 1
-            else:
-                previousValue = currentValue
-                if mistakesMade == 0:
-                    firstCheck = ""
-                    for i in range(0, len(secretWord)):
-                        firstCheck += "_ "
-                    if currentValue == firstCheck:
-                        #if guessInLowerCase not in lettersGuessed:
-                        #    lettersGuessed += guessInLowerCase
-                        print "Oops! That letter is not in my word: " + currentValue
-                        mistakesMade += 1
-                    else:
-                        print "Good guess: " + currentValue
-                        # add code to make change in lettersGuessed when multiple entries are present
-                        
-                        count = secretWord.count(guessInLowerCase)
-                        count -= 1 # bcuz once upar ho chuka hai
-                        while count:
-                            lettersGuessed += guessInLowerCase
-                            count -= 1
-                        #print lettersGuessed
-                        
-                else:
-                    print "Good guess: " + currentValue
-                    # add code to make change in lettersGuessed when multiple entries are present
-                    
-                    count = secretWord.count(guessInLowerCase)
-                    count -= 1 # bcuz once upar ho chuka hai
-                    while count:
-                            lettersGuessed += guessInLowerCase
-                            count -= 1
-                    #print lettersGuessed
-                    
-        #print "Letters Guessed: " + lettersGuessed
-        if isWordGuessed(secretWord, lettersGuessed):
-            print "Congratulations, you won!"
-            break
-
-    if mistakesMade == guesses:
-        print "Sorry, you ran out of guesses. The word was "  + secretWord + "."
