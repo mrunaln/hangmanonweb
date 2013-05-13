@@ -1,7 +1,9 @@
 $(document).ready(function () {
 	"use strict";
+	$('.available-letter').attr('disabled', 'true');
 	$.getJSON('/initialize', function(data){
 		console.log(data);
+		$('.available-letter').removeAttr('disabled');
 		$('.brand').html(data.msg);
 		$('#noOfGuesses').html(data.guesses);
 		
@@ -21,6 +23,8 @@ $(document).ready(function () {
 	$('.available-letter').click(function(){
 		var $this = $(this);
 		var currentInput = $this.html();
+		$this.attr('disabled', 'true');
+		
 		$.ajax({
 			type: 'POST',
 			url: '/input',
@@ -29,7 +33,10 @@ $(document).ready(function () {
 			contentType: 'application/json',
 			success: function(data){
 				console.log(data);
+				$('.computer-messages').html(data["msg"]);
+				$('#noOfGuesses').html(data["guesses"])
 				//change current letter's color to RED and Disable It.
+				$this.css('background-color', "#FF0000");
 			},
 			error: function(jqXHR, textStatus){
 				console.log("Oops.. something went wrong! : " + jqXHR + " -> " + textStatus);
